@@ -21,7 +21,12 @@ const CotizacionForm = () => {
     tipoPlancha: '',
     color: '',
     vendedora: '',
-    comentarios: ''
+    comentarios: '',
+    nombreCliente: '',
+    telefono: '',
+    direccionTaller: '',
+    entrega: 'domicilio',
+    fecha: new Date().toISOString().slice(0, 10)
   })
 
   // Estados para medidas
@@ -153,8 +158,8 @@ const CotizacionForm = () => {
   // Función para enviar cotización
   const enviarCotizacion = async () => {
     // Validaciones
-    if (!formData.tipoPlancha || !formData.color || !formData.vendedora) {
-      toast.error("Tipo de plancha, color y vendedora son obligatorios")
+    if (!formData.tipoPlancha || !formData.color || !formData.vendedora || !formData.nombreCliente || !formData.telefono || !formData.direccionTaller) {
+      toast.error("Todos los campos de información básica son obligatorios")
       return
     }
 
@@ -170,6 +175,11 @@ const CotizacionForm = () => {
         tipoPlancha: formData.tipoPlancha,
         color: formData.color,
         vendedora: formData.vendedora,
+        nombreCliente: formData.nombreCliente,
+        telefono: formData.telefono,
+        direccionTaller: formData.direccionTaller,
+        entrega: formData.entrega,
+        fecha: formData.fecha,
         medidasTexto: medidas.map(m => m.descripcion).join('\n'),
         medidasArray: medidas.map(m => m.descripcion),
         medidasEstructuradas: medidas,
@@ -196,7 +206,12 @@ const CotizacionForm = () => {
           tipoPlancha: '',
           color: '',
           vendedora: '',
-          comentarios: ''
+          comentarios: '',
+          nombreCliente: '',
+          telefono: '',
+          direccionTaller: '',
+          entrega: 'domicilio',
+          fecha: new Date().toISOString().slice(0, 10)
         })
         setMedidas([])
       } else {
@@ -260,6 +275,56 @@ const CotizacionForm = () => {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Nuevos campos para información del cliente */}
+            <div>
+              <Label htmlFor="nombreCliente">Nombre del Cliente *</Label>
+              <Input
+                value={formData.nombreCliente}
+                onChange={(e) => setFormData({...formData, nombreCliente: e.target.value})}
+                placeholder="Ingrese el nombre del cliente"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="telefono">Teléfono *</Label>
+              <Input
+                value={formData.telefono}
+                onChange={(e) => setFormData({...formData, telefono: e.target.value})}
+                placeholder="Ingrese el teléfono de contacto"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="direccionTaller">Dirección del Taller *</Label>
+              <Textarea
+                value={formData.direccionTaller}
+                onChange={(e) => setFormData({...formData, direccionTaller: e.target.value})}
+                placeholder="Ingrese la dirección del taller"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="entrega">Tipo de Entrega</Label>
+              <Select value={formData.entrega} onValueChange={(value) => setFormData({...formData, entrega: value})}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="domicilio">A Domicilio</SelectItem>
+                  <SelectItem value="sucursal">En Sucursal</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="fecha">Fecha de Entrega</Label>
+              <Input
+                type="date"
+                value={formData.fecha}
+                onChange={(e) => setFormData({...formData, fecha: e.target.value})}
+              />
             </div>
           </CardContent>
         </Card>
@@ -420,6 +485,11 @@ const CotizacionForm = () => {
                 <div>Tipo: <span className="font-medium">{formData.tipoPlancha || <span className='text-gray-400'>-</span>}</span></div>
                 <div>Color: <span className="font-medium">{formData.color || <span className='text-gray-400'>-</span>}</span></div>
                 <div>Vendedora: <span className="font-medium">{formData.vendedora || <span className='text-gray-400'>-</span>}</span></div>
+                <div>Cliente: <span className="font-medium">{formData.nombreCliente || <span className='text-gray-400'>-</span>}</span></div>
+                <div>Teléfono: <span className="font-medium">{formData.telefono || <span className='text-gray-400'>-</span>}</span></div>
+                <div>Dirección: <span className="font-medium">{formData.direccionTaller || <span className='text-gray-400'>-</span>}</span></div>
+                <div>Entrega: <span className="font-medium">{formData.entrega === 'domicilio' ? 'A Domicilio' : 'En Sucursal'}</span></div>
+                <div>Fecha: <span className="font-medium">{new Date(formData.fecha).toLocaleDateString('es-ES') || <span className='text-gray-400'>-</span>}</span></div>
               </div>
             </div>
             {/* Medidas */}
