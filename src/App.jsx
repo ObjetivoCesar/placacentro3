@@ -25,7 +25,7 @@ function App() {
             </div>
             <Button 
               className="bg-green-600 hover:bg-green-700 text-white"
-              onClick={() => window.open('https://wa.me/1234567890', '_blank')}
+              onClick={() => window.open('https://wa.me/593963425323', '_blank')}
             >
               WhatsApp
             </Button>
