@@ -1,0 +1,7 @@
+# Ignora archivos de entorno y dependencias locales
+.env
+node_modules/
+dist/
+build/
+pnpm-lock.yaml
+# Puedes agregar aquí otros archivos o carpetas que no quieras subir a git
