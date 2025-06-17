@@ -36,6 +36,8 @@ const CotizacionForm = () => {
   const [medidas, setMedidas] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [userId, setUserId] = useState(null)
+  // Estado para guardar la transcripción de voz
+  const [transcripcionVoz, setTranscripcionVoz] = useState('')
 
   useEffect(() => {
     let storedUserId = localStorage.getItem("placacentro_user_id")
@@ -124,6 +126,7 @@ const CotizacionForm = () => {
       // Reindexar todas las medidas
       return combinedMedidas.map((medida, index) => ({ ...medida, linea: index + 1 }))
     })
+    setTranscripcionVoz(transcriptionText || '')
     toast.success(`Se agregaron ${transcribedMeasures.length} medidas desde el audio.`)
   }
 
@@ -208,9 +211,9 @@ const CotizacionForm = () => {
 
 
    return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      {/* Formulario Principal */}
-      <div className="space-y-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* Formulario Principal (2/3) */}
+      <div className="lg:col-span-2 space-y-6">
         {/* Sección 1: Información Básica */}
         <Card>
           <CardHeader>
@@ -402,10 +405,49 @@ const CotizacionForm = () => {
             />
           </CardContent>
         </Card>
-
-        <Button onClick={enviarCotizacion} className="w-full py-3 text-lg bg-green-600 hover:bg-green-700" disabled={isLoading}>
-          {isLoading ? "Enviando..." : "Enviar Cotización"}
-        </Button>
+      </div>
+      {/* Resumen de Cotización (1/3) */}
+      <div className="lg:col-span-1 space-y-6">
+        <Card className="sticky top-6">
+          <CardHeader>
+            <CardTitle>Resumen de Cotización</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Información Básica */}
+            <div>
+              <h4 className="font-semibold mb-1">Información Básica</h4>
+              <div className="text-sm text-gray-700">
+                <div>Tipo: <span className="font-medium">{formData.tipoPlancha || <span className='text-gray-400'>-</span>}</span></div>
+                <div>Color: <span className="font-medium">{formData.color || <span className='text-gray-400'>-</span>}</span></div>
+                <div>Vendedora: <span className="font-medium">{formData.vendedora || <span className='text-gray-400'>-</span>}</span></div>
+              </div>
+            </div>
+            {/* Medidas */}
+            <div>
+              <h4 className="font-semibold mb-1">Medidas</h4>
+              {medidas.length === 0 ? (
+                <div className="text-gray-400 text-sm">No hay medidas agregadas.</div>
+              ) : (
+                <ul className="text-sm list-disc pl-5 space-y-1">
+                  {medidas.map((medida, idx) => (
+                    <li key={idx}>{medida.descripcion}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            {/* Transcripción de Voz */}
+            {transcripcionVoz && (
+              <div>
+                <h4 className="font-semibold mb-1">Transcripción de Voz</h4>
+                <div className="bg-gray-50 rounded p-2 text-xs text-gray-700 whitespace-pre-line">{transcripcionVoz}</div>
+              </div>
+            )}
+            {/* Botón Enviar Cotización */}
+            <Button onClick={enviarCotizacion} className="w-full py-3 text-lg bg-green-600 hover:bg-green-700" disabled={isLoading}>
+              {isLoading ? "Enviando..." : "Enviar Cotización"}
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
 
