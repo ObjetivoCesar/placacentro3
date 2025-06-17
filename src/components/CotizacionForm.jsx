@@ -545,18 +545,11 @@ const CotizacionForm = () => {
         </Card>
         {/* Respuesta del webhook y botón de aprobación */}
         {webhookResponse && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-            <div className="bg-white border border-blue-200 rounded-xl p-6 max-w-lg w-[90vw] mx-4 shadow-2xl relative" style={{margin: '40px'}}>
-              <button
-                className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-xl"
-                onClick={() => setWebhookResponse('')}
-                aria-label="Cerrar"
-              >×</button>
-              <div className="mb-4 text-base text-blue-900 whitespace-pre-line break-words">{webhookResponse}</div>
-              <Button onClick={enviarConfirmacion} disabled={isConfirming} className="bg-green-600 hover:bg-green-700 w-full">
-                {isConfirming ? 'Enviando...' : 'Aprobado'}
-              </Button>
-            </div>
+          <div className="mt-6 mb-4 max-h-96 overflow-y-auto bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="mb-2 text-sm text-blue-900 whitespace-pre-line break-words">{webhookResponse}</div>
+            <Button onClick={enviarConfirmacion} disabled={isConfirming} className="bg-green-600 hover:bg-green-700 mt-2">
+              {isConfirming ? 'Enviando...' : 'Aprobado'}
+            </Button>
           </div>
         )}
       </div>
