@@ -116,7 +116,9 @@ const VoiceRecorder = ({ onTranscription, isDisabled = false }) => {
 
     const data = await response.json()
     return data.text
-  }    const parseMeasuresFromText = (text) => {
+  }
+
+  const parseMeasuresFromText = (text) => {
     const measures = []
     
     // Patrones para detectar medidas
