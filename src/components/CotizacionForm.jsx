@@ -43,6 +43,8 @@ const CotizacionForm = () => {
   const [userId, setUserId] = useState(null)
   // Estado para guardar la transcripción de voz
   const [transcripcionVoz, setTranscripcionVoz] = useState('')
+  const [webhookResponse, setWebhookResponse] = useState('')
+  const [isConfirming, setIsConfirming] = useState(false)
 
   useEffect(() => {
     let storedUserId = localStorage.getItem("placacentro_user_id")
@@ -189,7 +191,6 @@ const CotizacionForm = () => {
         userId: userId
       }
 
-      // Enviar a Make.com webhook
       const response = await fetch('https://hook.us2.make.com/ql05r0bkj8p9f5ddtyv0m3sq8muz487p', {
         method: 'POST',
         headers: {
@@ -197,7 +198,8 @@ const CotizacionForm = () => {
         },
         body: JSON.stringify(payload)
       })
-
+      const text = await response.text()
+      setWebhookResponse(text)
       if (response.ok) {
         toast.success("Su cotización se ha enviado correctamente")
         
@@ -224,6 +226,29 @@ const CotizacionForm = () => {
     }
   }
 
+  // Función para enviar confirmación
+  const enviarConfirmacion = async () => {
+    setIsConfirming(true)
+    try {
+      const response = await fetch('https://hook.us2.make.com/ql05r0bkj8p9f5ddtyv0m3sq8muz487p', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ confirmacion: 'confirmado', userId })
+      })
+      if (response.ok) {
+        toast.success('Confirmación enviada')
+        setWebhookResponse('')
+      } else {
+        toast.error('Error al enviar confirmación')
+      }
+    } catch (e) {
+      toast.error('Error al enviar confirmación')
+    } finally {
+      setIsConfirming(false)
+    }
+  }
 
    return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -518,6 +543,15 @@ const CotizacionForm = () => {
             </Button>
           </CardContent>
         </Card>
+        {/* Respuesta del webhook y botón de aprobación */}
+        {webhookResponse && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-2 flex flex-col items-start">
+            <div className="mb-2 text-sm text-blue-900 whitespace-pre-line">{webhookResponse}</div>
+            <Button onClick={enviarConfirmacion} disabled={isConfirming} className="bg-green-600 hover:bg-green-700">
+              {isConfirming ? 'Enviando...' : 'Aprobado'}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
 
