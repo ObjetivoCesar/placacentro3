@@ -371,12 +371,7 @@ const CotizacionForm = () => {
               </div>
               <div className="text-center">
                 <Label className="text-sm font-medium mb-2 block">Foto de Medidas</Label>
-                {/* Instrucciones para maestros sobre la foto */}
-                <div className="mb-2 px-2 py-1 rounded bg-orange-100 text-orange-900 text-xs border border-orange-300">
-                  Toma una foto clara de la <b>lista de materiales</b>.<br />
-                  Asegúrate de que el texto sea legible y que haya buena luz.<br />
-                  Si es la primera vez, permite el acceso a la cámara y usa la cámara trasera del celular.
-                </div>
+                {/* Instrucciones eliminadas para una UI más limpia */}
                 <CameraCapture 
                   onImageAnalysis={manejarAnalisisImagen}
                   isDisabled={isLoading}
