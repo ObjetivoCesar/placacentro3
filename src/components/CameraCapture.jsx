@@ -8,6 +8,7 @@ const CameraCapture = ({ onImageAnalysis, isDisabled = false }) => {
   const [isProcessing, setIsProcessing] = useState(false)
   const [capturedImage, setCapturedImage] = useState(null)
   const [showCamera, setShowCamera] = useState(false)
+  const [cameraError, setCameraError] = useState("")
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
   const streamRef = useRef(null)
@@ -16,25 +17,30 @@ const CameraCapture = ({ onImageAnalysis, isDisabled = false }) => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { 
-          facingMode: 'environment', // Usar cámara trasera en móviles
+          facingMode: { ideal: 'environment' }, // Sugerir cámara trasera
           width: { ideal: 1280 },
           height: { ideal: 720 }
         } 
       })
-      
       streamRef.current = stream
       if (videoRef.current) {
         videoRef.current.srcObject = stream
         videoRef.current.play()
       }
-      
       setShowCamera(true)
       setIsCapturing(true)
+      setCameraError("")
       toast.success("Cámara activada. Posiciona la imagen con las medidas.")
-      
     } catch (error) {
       console.error('Error al acceder a la cámara:', error)
-      toast.error("No se pudo acceder a la cámara. Verifica los permisos.")
+      let msg = "No se pudo acceder a la cámara. Verifica los permisos en tu navegador o dispositivo. Si tienes más de una cámara, intenta cambiar a la trasera."
+      if (error && error.name === 'NotAllowedError') {
+        msg = "Permiso denegado para usar la cámara. Por favor, permite el acceso en la configuración del navegador."
+      } else if (error && error.name === 'NotFoundError') {
+        msg = "No se encontró ninguna cámara disponible en el dispositivo."
+      }
+      setCameraError(msg)
+      toast.error(msg)
     }
   }
 
@@ -226,6 +232,12 @@ const CameraCapture = ({ onImageAnalysis, isDisabled = false }) => {
 
   return (
     <div className="flex flex-col items-center space-y-4">
+      {cameraError && (
+        <div className="w-full bg-red-100 text-red-800 border border-red-300 rounded px-3 py-2 text-xs text-center mb-2">
+          {cameraError}
+        </div>
+      )}
+
       {!showCamera && !capturedImage && (
         <div className="flex flex-col items-center space-y-2">
           <Button
@@ -241,6 +253,9 @@ const CameraCapture = ({ onImageAnalysis, isDisabled = false }) => {
           </Button>
           <p className="text-sm text-gray-600 text-center">
             Tomar foto de medidas
+          </p>
+          <p className="text-xs text-gray-500 mt-1">
+            Si ves la cámara frontal, busca el ícono para cambiar a la trasera o gira el dispositivo.
           </p>
         </div>
       )}

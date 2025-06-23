@@ -371,6 +371,12 @@ const CotizacionForm = () => {
               </div>
               <div className="text-center">
                 <Label className="text-sm font-medium mb-2 block">Foto de Medidas</Label>
+                {/* Instrucciones para maestros sobre la foto */}
+                <div className="mb-2 px-2 py-1 rounded bg-orange-100 text-orange-900 text-xs border border-orange-300">
+                  Toma una foto clara de la <b>lista de materiales</b>.<br />
+                  Asegúrate de que el texto sea legible y que haya buena luz.<br />
+                  Si es la primera vez, permite el acceso a la cámara y usa la cámara trasera del celular.
+                </div>
                 <CameraCapture 
                   onImageAnalysis={manejarAnalisisImagen}
                   isDisabled={isLoading}
@@ -498,7 +504,7 @@ const CotizacionForm = () => {
       </div>
       {/* Resumen de Cotización (1/3) */}
       <div className="lg:col-span-1 space-y-6">
-        <Card className="sticky top-6">
+        <Card className="sticky top-6 bg-[#23232a] text-white">
           <CardHeader>
             <CardTitle>Resumen de Cotización</CardTitle>
           </CardHeader>
@@ -506,7 +512,7 @@ const CotizacionForm = () => {
             {/* Información Básica */}
             <div>
               <h4 className="font-semibold mb-1">Información Básica</h4>
-              <div className="text-sm text-gray-700">
+              <div className="text-sm" style={{color: 'white'}}>
                 <div>Tipo: <span className="font-medium">{formData.tipoPlancha || <span className='text-gray-400'>-</span>}</span></div>
                 <div>Color: <span className="font-medium">{formData.color || <span className='text-gray-400'>-</span>}</span></div>
                 <div>Vendedora: <span className="font-medium">{formData.vendedora || <span className='text-gray-400'>-</span>}</span></div>
@@ -521,7 +527,7 @@ const CotizacionForm = () => {
             <div>
               <h4 className="font-semibold mb-1">Medidas</h4>
               {medidas.length === 0 ? (
-                <div className="text-gray-400 text-sm">No hay medidas agregadas.</div>
+                <div className="text-gray-300 text-sm">No hay medidas agregadas.</div>
               ) : (
                 <ul className="text-sm list-disc pl-5 space-y-1">
                   {medidas.map((medida, idx) => (
@@ -534,11 +540,11 @@ const CotizacionForm = () => {
             {transcripcionVoz && (
               <div>
                 <h4 className="font-semibold mb-1">Transcripción de Voz</h4>
-                <div className="bg-gray-50 rounded p-2 text-xs text-gray-700 whitespace-pre-line">{transcripcionVoz}</div>
+                <div className="bg-gray-800 rounded p-2 text-xs text-white whitespace-pre-line">{transcripcionVoz}</div>
               </div>
             )}
             {/* Botón Enviar Cotización */}
-            <Button onClick={enviarCotizacion} className="w-full py-3 text-lg bg-green-600 hover:bg-green-700" disabled={isLoading}>
+            <Button onClick={enviarCotizacion} className="w-full py-3 text-lg bg-green-600 hover:bg-green-700 text-white" disabled={isLoading}>
               {isLoading ? "Enviando..." : "Enviar Cotización"}
             </Button>
           </CardContent>
