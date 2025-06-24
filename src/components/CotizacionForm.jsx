@@ -12,6 +12,7 @@ import { toast } from 'sonner'
 import BordoSelector from './BordoSelector.jsx'
 import VoiceRecorder from './VoiceRecorder.jsx'
 import CameraCapture from './CameraCapture.jsx'
+import FileUpload from './FileUpload.jsx'
 import { processImageWithOpenAI, sendToWhatsApp } from '../lib/imageUtils.js'
 
 const CotizacionForm = () => {
@@ -361,7 +362,7 @@ const CotizacionForm = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Nuevas opciones de entrada: Voz y Cámara */}
-            <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+            <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
               <div className="text-center">
                 <Label className="text-sm font-medium mb-2 block">Dictar Medidas</Label>
                 <VoiceRecorder 
@@ -371,8 +372,14 @@ const CotizacionForm = () => {
               </div>
               <div className="text-center">
                 <Label className="text-sm font-medium mb-2 block">Foto de Medidas</Label>
-                {/* Instrucciones eliminadas para una UI más limpia */}
                 <CameraCapture 
+                  onImageAnalysis={manejarAnalisisImagen}
+                  isDisabled={isLoading}
+                />
+              </div>
+              <div className="text-center">
+                <Label className="text-sm font-medium mb-2 block">Subir Foto</Label>
+                <FileUpload 
                   onImageAnalysis={manejarAnalisisImagen}
                   isDisabled={isLoading}
                 />
