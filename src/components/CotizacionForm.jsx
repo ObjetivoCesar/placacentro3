@@ -14,6 +14,7 @@ import VoiceRecorder from './VoiceRecorder.jsx'
 import CameraCapture from './CameraCapture.jsx'
 import FileUpload from './FileUpload.jsx'
 import { processImageWithOpenAI, sendToWhatsApp } from '../lib/imageUtils.js'
+import { getOrCreateBrowserUserId } from '../lib/browser_user_id.js'
 
 const CotizacionForm = () => {
   
@@ -48,17 +49,6 @@ const CotizacionForm = () => {
   const [isConfirming, setIsConfirming] = useState(false)
   const [showImageModal, setShowImageModal] = useState(false)
   const [modalImage, setModalImage] = useState(null)
-
-  // Función universal para obtener o crear un userId único por navegador
-  function getOrCreateBrowserUserId() {
-    const KEY = "browser_user_id";
-    let userId = localStorage.getItem(KEY);
-    if (!userId) {
-      userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      localStorage.setItem(KEY, userId);
-    }
-    return userId;
-  }
 
   useEffect(() => {
     setUserId(getOrCreateBrowserUserId())
