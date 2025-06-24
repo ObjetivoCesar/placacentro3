@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button.jsx'
-import { Camera, Loader2, X } from 'lucide-react'
+import { Camera, Loader2, X, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
 
 const CameraCapture = ({ onImageAnalysis, isDisabled = false }) => {
@@ -8,46 +8,149 @@ const CameraCapture = ({ onImageAnalysis, isDisabled = false }) => {
   const [isProcessing, setIsProcessing] = useState(false)
   const [capturedImage, setCapturedImage] = useState(null)
   const [showCamera, setShowCamera] = useState(false)
+  const [error, setError] = useState(null)
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
   const streamRef = useRef(null)
 
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          facingMode: 'environment', // Usar cámara trasera en móviles
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        } 
-      })
+      setError(null)
+      console.log('🎥 Iniciando acceso a la cámara...')
+      
+      // Verificar si getUserMedia está disponible
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Tu navegador no soporta acceso a la cámara. Intenta con un navegador más reciente.')
+      }
+
+      // Verificar si estamos en un contexto seguro (HTTPS)
+      console.log('🔒 Protocolo:', location.protocol, 'Host:', location.hostname)
+      if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+        throw new Error('El acceso a la cámara requiere una conexión segura (HTTPS). Asegúrate de que tu sitio esté servido a través de HTTPS.')
+      }
+
+      // Verificar permisos antes de solicitar acceso
+      try {
+        const permissionStatus = await navigator.permissions.query({ name: 'camera' })
+        console.log('📋 Estado de permisos de cámara:', permissionStatus.state)
+        
+        if (permissionStatus.state === 'denied') {
+          throw new Error('Permisos de cámara denegados. Ve a la configuración de tu navegador y permite el acceso a la cámara para este sitio.')
+        }
+      } catch (permError) {
+        console.warn('⚠️ No se pudo verificar permisos:', permError)
+        // Continuar de todos modos, algunos navegadores no soportan permissions API
+      }
+
+      // Configuraciones de cámara con fallbacks para mejor compatibilidad
+      const constraints = {
+        video: {
+          facingMode: { ideal: 'environment' }, // Preferir cámara trasera
+          width: { ideal: 1280, max: 1920 },
+          height: { ideal: 720, max: 1080 }
+        }
+      }
+
+      console.log('📱 Solicitando acceso con configuración completa...')
+      let stream
+      try {
+        // Intentar con configuración completa
+        stream = await navigator.mediaDevices.getUserMedia(constraints)
+        console.log('✅ Acceso a cámara exitoso con configuración completa')
+      } catch (err) {
+        console.warn('⚠️ Fallback: usando configuración básica de cámara', err)
+        // Fallback a configuración más básica
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: 'environment' } 
+          })
+          console.log('✅ Acceso a cámara exitoso con configuración básica')
+        } catch (err2) {
+          console.warn('⚠️ Segundo fallback: usando configuración mínima', err2)
+          // Último fallback - solo video sin restricciones
+          stream = await navigator.mediaDevices.getUserMedia({ video: true })
+          console.log('✅ Acceso a cámara exitoso con configuración mínima')
+        }
+      }
+
       streamRef.current = stream
       if (videoRef.current) {
         videoRef.current.srcObject = stream
-        videoRef.current.play()
+        
+        // Manejar eventos del video
+        videoRef.current.onloadedmetadata = () => {
+          console.log('📹 Metadatos del video cargados')
+          videoRef.current.play().then(() => {
+            console.log('▶️ Video iniciado correctamente')
+          }).catch(err => {
+            console.error('❌ Error al reproducir video:', err)
+            setError('Error al inicializar la vista previa de la cámara')
+          })
+        }
+
+        videoRef.current.onerror = (err) => {
+          console.error('❌ Error en el elemento video:', err)
+          setError('Error en la reproducción del video')
+        }
       }
+      
       setShowCamera(true)
       setIsCapturing(true)
       toast.success("Cámara activada. Posiciona la imagen con las medidas.")
+      
     } catch (error) {
-      console.error('Error al acceder a la cámara:', error)
-      toast.error("No se pudo acceder a la cámara.")
+      console.error('❌ Error al acceder a la cámara:', error)
+      let errorMessage = 'No se pudo acceder a la cámara.'
+      
+      if (error.name === 'NotAllowedError') {
+        errorMessage = 'Acceso a la cámara denegado. Por favor, permite el acceso a la cámara en tu navegador y recarga la página.'
+      } else if (error.name === 'NotFoundError') {
+        errorMessage = 'No se encontró ninguna cámara en tu dispositivo.'
+      } else if (error.name === 'NotSupportedError') {
+        errorMessage = 'Tu navegador no soporta acceso a la cámara.'
+      } else if (error.name === 'NotReadableError') {
+        errorMessage = 'La cámara está siendo usada por otra aplicación. Cierra otras apps que puedan estar usando la cámara.'
+      } else if (error.name === 'OverconstrainedError') {
+        errorMessage = 'Las configuraciones de cámara solicitadas no son compatibles con tu dispositivo.'
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+      
+      setError(errorMessage)
+      toast.error(errorMessage)
+      
+      // Log adicional para debugging
+      console.log('🔍 Información de debugging:')
+      console.log('- User Agent:', navigator.userAgent)
+      console.log('- Protocolo:', location.protocol)
+      console.log('- Host:', location.hostname)
+      console.log('- MediaDevices disponible:', !!navigator.mediaDevices)
+      console.log('- getUserMedia disponible:', !!navigator.mediaDevices?.getUserMedia)
     }
   }
 
   const stopCamera = () => {
+    console.log('🛑 Deteniendo cámara...')
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop())
+      streamRef.current.getTracks().forEach(track => {
+        track.stop()
+        console.log('🔇 Track detenido:', track.kind)
+      })
       streamRef.current = null
     }
     setShowCamera(false)
     setIsCapturing(false)
     setCapturedImage(null)
+    setError(null)
   }
 
   const capturePhoto = () => {
-    if (!videoRef.current || !canvasRef.current) return
+    if (!videoRef.current || !canvasRef.current) {
+      console.error('❌ Referencias de video o canvas no disponibles')
+      return
+    }
 
+    console.log('📸 Capturando foto...')
     const video = videoRef.current
     const canvas = canvasRef.current
     const context = canvas.getContext('2d')
@@ -56,12 +159,15 @@ const CameraCapture = ({ onImageAnalysis, isDisabled = false }) => {
     canvas.width = video.videoWidth
     canvas.height = video.videoHeight
 
+    console.log('📐 Dimensiones de captura:', canvas.width, 'x', canvas.height)
+
     // Dibujar el frame actual del video en el canvas
     context.drawImage(video, 0, 0, canvas.width, canvas.height)
 
     // Convertir a blob
     canvas.toBlob(async (blob) => {
       if (blob) {
+        console.log('💾 Imagen capturada, tamaño:', blob.size, 'bytes')
         const imageFile = new File([blob], 'captured_image.jpg', { type: 'image/jpeg' })
         const imageUrl = URL.createObjectURL(blob)
         
@@ -72,36 +178,52 @@ const CameraCapture = ({ onImageAnalysis, isDisabled = false }) => {
         try {
           await processImage(imageFile)
         } catch (error) {
-          console.error('Error procesando imagen:', error)
+          console.error('❌ Error procesando imagen:', error)
           toast.error("Error al procesar la imagen")
         } finally {
           setIsProcessing(false)
         }
+      } else {
+        console.error('❌ No se pudo generar blob de la imagen')
+        toast.error("Error al capturar la imagen")
       }
     }, 'image/jpeg', 0.8)
   }
 
   const processImage = async (imageFile) => {
     try {
+      console.log('🔍 Procesando imagen...')
+      // Verificar si tenemos la API key de OpenAI
+      const apiKey = import.meta.env.VITE_OPENAI_API_KEY
+      if (!apiKey) {
+        console.warn('⚠️ API key de OpenAI no configurada')
+        toast.warning("Análisis de imagen no disponible. Configura VITE_OPENAI_API_KEY.")
+        onImageAnalysis([], "Análisis de imagen no disponible - falta configuración de API")
+        return
+      }
+
       // Analizar imagen con OpenAI Vision
       const analysis = await analyzeImageWithVision(imageFile)
       
       if (analysis) {
+        console.log('📝 Análisis recibido:', analysis)
         // Parsear el análisis para extraer medidas
         const parsedMeasures = parseMeasuresFromText(analysis)
         
         if (parsedMeasures.length > 0) {
+          console.log('📏 Medidas detectadas:', parsedMeasures)
           onImageAnalysis(parsedMeasures, analysis)
           toast.success(`Se detectaron ${parsedMeasures.length} medida(s) en la imagen`)
         } else {
+          console.log('⚠️ No se detectaron medidas válidas')
           toast.warning("No se detectaron medidas válidas en la imagen")
           onImageAnalysis([], analysis)
         }
       }
       
     } catch (error) {
-      console.error('Error procesando imagen:', error)
-      toast.error("Error al procesar la imagen")
+      console.error('❌ Error procesando imagen:', error)
+      toast.error("Error al procesar la imagen: " + error.message)
     }
   }
 
@@ -149,7 +271,8 @@ const CameraCapture = ({ onImageAnalysis, isDisabled = false }) => {
     })
 
     if (!response.ok) {
-      throw new Error('Error en el análisis de imagen')
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(`Error en el análisis de imagen: ${response.status} ${errorData.error?.message || response.statusText}`)
     }
 
     const data = await response.json()
@@ -218,11 +341,20 @@ const CameraCapture = ({ onImageAnalysis, isDisabled = false }) => {
 
   const discardPhoto = () => {
     setCapturedImage(null)
-    URL.revokeObjectURL(capturedImage)
+    if (capturedImage) {
+      URL.revokeObjectURL(capturedImage)
+    }
   }
 
   return (
     <div className="flex flex-col items-center space-y-4">
+      {error && (
+        <div className="flex items-center space-x-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm max-w-xs">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          <span className="text-xs">{error}</span>
+        </div>
+      )}
+
       {!showCamera && !capturedImage && (
         <div className="flex flex-col items-center space-y-2">
           <Button
@@ -238,6 +370,9 @@ const CameraCapture = ({ onImageAnalysis, isDisabled = false }) => {
           </Button>
           <p className="text-sm text-gray-600 text-center">
             Tomar foto de medidas
+          </p>
+          <p className="text-xs text-gray-500 text-center max-w-xs">
+            Requiere HTTPS y permisos
           </p>
         </div>
       )}
