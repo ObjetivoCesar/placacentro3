@@ -47,21 +47,19 @@ const CotizacionForm = () => {
   const [webhookResponse, setWebhookResponse] = useState('')
   const [isConfirming, setIsConfirming] = useState(false)
 
-  useEffect(() => {
-    // Buscar primero el userId del ecommerce
-    let ecommerceUserId = localStorage.getItem("user_id")
-    let storedUserId = localStorage.getItem("placacentro_user_id")
-    let finalUserId = null
-    if (ecommerceUserId) {
-      finalUserId = ecommerceUserId
-      localStorage.setItem("placacentro_user_id", ecommerceUserId)
-    } else if (storedUserId) {
-      finalUserId = storedUserId
-    } else {
-      finalUserId = uuidv4()
-      localStorage.setItem("placacentro_user_id", finalUserId)
+  // Función universal para obtener o crear un userId único por navegador
+  function getOrCreateBrowserUserId() {
+    const KEY = "browser_user_id";
+    let userId = localStorage.getItem(KEY);
+    if (!userId) {
+      userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem(KEY, userId);
     }
-    setUserId(finalUserId)
+    return userId;
+  }
+
+  useEffect(() => {
+    setUserId(getOrCreateBrowserUserId())
   }, [])
 
   // Opciones para los selectores
