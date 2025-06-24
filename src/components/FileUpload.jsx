@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button.jsx'
 import { Upload, Loader2, X, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
 
-const FileUpload = ({ onImageAnalysis, isDisabled = false }) => {
+const FileUpload = ({ onImageAnalysis, isDisabled = false, onImageUploaded }) => {
   const [isProcessing, setIsProcessing] = useState(false)
   const [uploadedImage, setUploadedImage] = useState(null)
   const [error, setError] = useState(null)
@@ -35,6 +35,9 @@ const FileUpload = ({ onImageAnalysis, isDisabled = false }) => {
     setError(null)
     const imageUrl = URL.createObjectURL(file)
     setUploadedImage(imageUrl)
+    if (onImageUploaded) {
+      onImageUploaded(imageUrl)
+    }
     setIsProcessing(true)
 
     try {
@@ -235,31 +238,36 @@ const FileUpload = ({ onImageAnalysis, isDisabled = false }) => {
       )}
 
       {uploadedImage && (
-        <div className="relative">
-          <img
-            src={uploadedImage}
-            alt="Imagen subida"
-            className="w-full max-w-md rounded-lg border-2 border-gray-300"
-          />
-          {!isProcessing && (
-            <div className="flex justify-center space-x-4 mt-4">
-              <Button onClick={retryUpload} className="bg-blue-600 hover:bg-blue-700">
-                Subir otra
-              </Button>
-              <Button onClick={discardImage} variant="outline">
-                <X className="w-4 h-4 mr-2" />
-                Descartar
-              </Button>
+        <div className="w-full flex flex-col items-center mt-4">
+          <div className="w-full flex flex-col items-center">
+            <div className="w-full flex flex-col items-center overflow-hidden rounded-lg bg-white shadow-md border border-gray-200 p-2">
+              <img
+                src={uploadedImage}
+                alt="Imagen subida"
+                className="object-contain max-h-72 w-auto max-w-full mx-auto rounded-lg border border-gray-300 transition-all duration-200"
+                style={{boxShadow:'0 2px 8px rgba(0,0,0,0.04)'}}
+              />
+              {!isProcessing && (
+                <div className="flex flex-col w-full gap-2 mt-4">
+                  <Button onClick={retryUpload} className="w-full bg-blue-600 hover:bg-blue-700">
+                    Subir otra
+                  </Button>
+                  <Button onClick={discardImage} variant="outline" className="w-full">
+                    <X className="w-4 h-4 mr-2" />
+                    Descartar
+                  </Button>
+                </div>
+              )}
+              {isProcessing && (
+                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
+                  <div className="text-white text-center">
+                    <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
+                    <p>Analizando imagen...</p>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-          {isProcessing && (
-            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
-              <div className="text-white text-center">
-                <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
-                <p>Analizando imagen...</p>
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       )}
 

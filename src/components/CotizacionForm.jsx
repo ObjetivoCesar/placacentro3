@@ -46,6 +46,8 @@ const CotizacionForm = () => {
   const [transcripcionVoz, setTranscripcionVoz] = useState('')
   const [webhookResponse, setWebhookResponse] = useState('')
   const [isConfirming, setIsConfirming] = useState(false)
+  const [showImageModal, setShowImageModal] = useState(false)
+  const [modalImage, setModalImage] = useState(null)
 
   // Función universal para obtener o crear un userId único por navegador
   function getOrCreateBrowserUserId() {
@@ -257,6 +259,12 @@ const CotizacionForm = () => {
     }
   }
 
+  // En FileUpload, pasamos un callback para mostrar el modal cuando se sube imagen
+  const handleImageUploadModal = (imageUrl) => {
+    setModalImage(imageUrl)
+    setShowImageModal(true)
+  }
+
    return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       {/* Formulario Principal (2/3) */}
@@ -388,6 +396,7 @@ const CotizacionForm = () => {
                 <FileUpload 
                   onImageAnalysis={manejarAnalisisImagen}
                   isDisabled={isLoading}
+                  onImageUploaded={handleImageUploadModal}
                 />
               </div>
             </div>
@@ -567,6 +576,27 @@ const CotizacionForm = () => {
           </div>
         )}
       </div>
+
+      {/* Modal para imagen subida */}
+      {showImageModal && modalImage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+          <div className="relative bg-white rounded-xl shadow-2xl p-4 max-w-full w-[90vw] sm:w-[400px] flex flex-col items-center">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-red-500 text-2xl font-bold"
+              onClick={() => setShowImageModal(false)}
+              aria-label="Cerrar"
+            >
+              ×
+            </button>
+            <img
+              src={modalImage}
+              alt="Imagen subida"
+              className="object-contain w-full max-h-[60vh] rounded-lg border border-gray-200 mb-4"
+            />
+            <Button onClick={() => setShowImageModal(false)} className="w-full bg-blue-600 hover:bg-blue-700">Cerrar</Button>
+          </div>
+        </div>
+      )}
     </div>
 
   )
