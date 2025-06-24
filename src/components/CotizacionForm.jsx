@@ -48,12 +48,20 @@ const CotizacionForm = () => {
   const [isConfirming, setIsConfirming] = useState(false)
 
   useEffect(() => {
+    // Buscar primero el userId del ecommerce
+    let ecommerceUserId = localStorage.getItem("user_id")
     let storedUserId = localStorage.getItem("placacentro_user_id")
-    if (!storedUserId) {
-      storedUserId = uuidv4()
-      localStorage.setItem("placacentro_user_id", storedUserId)
+    let finalUserId = null
+    if (ecommerceUserId) {
+      finalUserId = ecommerceUserId
+      localStorage.setItem("placacentro_user_id", ecommerceUserId)
+    } else if (storedUserId) {
+      finalUserId = storedUserId
+    } else {
+      finalUserId = uuidv4()
+      localStorage.setItem("placacentro_user_id", finalUserId)
     }
-    setUserId(storedUserId)
+    setUserId(finalUserId)
   }, [])
 
   // Opciones para los selectores
